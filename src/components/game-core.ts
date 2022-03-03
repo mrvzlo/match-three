@@ -2,12 +2,13 @@ import Drawer from './drawer';
 import GameMap from './logic/game-map';
 import Point from './logic/point';
 import { CanvasSize, CellMargin, CellOuterSize, MatrixSize } from './constants';
-import MapItem from './logic/map-item';
+import { Direction } from './enums/direction';
 
 export default class GameCore {
    private readonly drawingService: Drawer;
    private readonly boundaries: DOMRect;
 
+   lock = false;
    matrix: GameMap;
    focused: Point | null = null;
 
@@ -42,6 +43,7 @@ export default class GameCore {
    }
 
    pick(point: Point) {
+      if (this.lock) return;
       this.focused = this.getCoordinates(point);
       if (this.focused === null) return;
       this.drawingService.drawMapItem(this.matrix.getItem(this.focused));
@@ -56,16 +58,17 @@ export default class GameCore {
       if (second === null) return;
       this.focused = null;
 
+      this.lock = true;
       await this.drawingService.swap(this.matrix.getItem(first), this.matrix.getItem(second));
       this.matrix.swap(this.matrix.getItem(first), this.matrix.getItem(second));
       const matches = this.matrix.getMatches([first, second]);
       if (matches.length === 0) {
          await this.drawingService.swap(this.matrix.getItem(first), this.matrix.getItem(second));
          this.matrix.swap(first, second);
-         return;
+      } else {
+         await this.delete(matches);
       }
-
-      await this.delete(matches);
+      this.lock = false;
    }
 
    async delete(matches: Point[]) {
@@ -85,10 +88,8 @@ export default class GameCore {
       if (dx === 0 && dy === 0) return null;
 
       const second = from.clone();
-      if (dx < 0) second.x--;
-      else if (dx > 0) second.x++;
-      else if (dy < 0) second.y--;
-      else if (dy > 0) second.y++;
+      const direction = dx < 0 ? Direction.Left : dx > 0 ? Direction.Right : dy < 0 ? Direction.Top : Direction.Bottom;
+      second.shift(direction);
       return second;
    }
 

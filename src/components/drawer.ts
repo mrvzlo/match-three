@@ -1,4 +1,5 @@
 import { CanvasSize, CellMargin, CellOuterSize, CellPadding, FPS, FrameTime, MatrixSize } from './constants';
+import { Direction } from './enums/direction';
 import { Gem } from './enums/gem';
 import GemDrawer from './gem-drawer';
 import MapItem from './logic/map-item';
@@ -29,21 +30,22 @@ export default class Drawer {
    async swap(first: MapItem, second: MapItem) {
       const baseFirst = first.clone();
       const baseSecond = second.clone();
+      const tempFirst = first.clone();
+      const tempSecond = second.clone();
+
       const animationTime = 100;
       const frames = (FPS * animationTime) / 1000;
       for (let i = 0; i < animationTime; i += FrameTime) {
          this.drawCellBg(baseFirst);
          this.drawCellBg(baseSecond);
-         second.x += (baseFirst.x - baseSecond.x) / frames;
-         second.y += (baseFirst.y - baseSecond.y) / frames;
-         first.x += (baseSecond.x - baseFirst.x) / frames;
-         first.y += (baseSecond.y - baseFirst.y) / frames;
-         this.drawMapItem(second);
-         this.drawMapItem(first);
+         tempSecond.shift(Direction.Right, (baseFirst.x - baseSecond.x) / frames);
+         tempSecond.shift(Direction.Bottom, (baseFirst.y - baseSecond.y) / frames);
+         tempFirst.shift(Direction.Right, (baseSecond.x - baseFirst.x) / frames);
+         tempFirst.shift(Direction.Bottom, (baseSecond.y - baseFirst.y) / frames);
+         this.drawMapItem(tempSecond);
+         this.drawMapItem(tempFirst);
          await this.wait(FrameTime);
       }
-      first.round();
-      second.round();
    }
 
    async delete(list: MapItem[]) {
@@ -60,18 +62,16 @@ export default class Drawer {
    }
 
    async fall(list: MapItem[]) {
-      const maxFallTime = 1500;
       while (list.length > 0) {
          list.forEach((item) => {
             item.fallFrom++;
             const temp = item.clone();
-            temp.y = item.fallFrom;
+            temp.setY(item.fallFrom);
             this.fillBg(temp);
             this.drawMapItem(temp);
          });
 
          list = list.filter((item) => item.y > item.fallFrom);
-
          await this.wait(FrameTime);
       }
    }

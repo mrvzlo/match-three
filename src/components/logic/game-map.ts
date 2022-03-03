@@ -11,18 +11,16 @@ export default class GameMap {
       this.size = size;
    }
 
-   getItem(point: Point): MapItem {
-      return this.items[point.x][point.y];
-   }
-
    getAll(): MapItem[] {
       return Array.prototype.concat.apply([], this.items);
    }
 
    swap(a: Point, b: Point): void {
-      const temp = this.items[a.x][a.y];
-      this.items[a.x][a.y] = this.items[b.x][b.y];
-      this.items[b.x][b.y] = temp;
+      const itemA = this.getItem(a);
+      const itemB = this.getItem(b);
+      const temp = itemA.value;
+      itemA.value = itemB.value;
+      itemB.value = temp;
    }
 
    getMatches(source: Point[]): Point[] {
@@ -31,7 +29,7 @@ export default class GameMap {
    }
 
    delete(list: Point[]): void {
-      list.forEach((item) => (this.items[item.x][item.y].value = Gem.Clear));
+      list.forEach((point) => (this.getItem(point).value = Gem.Clear));
    }
 
    complement(): MapItem[] {
@@ -58,7 +56,7 @@ export default class GameMap {
 
    getFallFrom(point: Point, minPos: number): number {
       const temp = point.clone();
-      do temp.y--;
+      do temp.shift(Direction.Top);
       while (this.isPointInBounds(temp) && this.getItem(temp).value === Gem.Clear);
       return temp.y < 0 ? minPos : temp.y;
    }
@@ -97,20 +95,7 @@ export default class GameMap {
       const matches: Point[] = [];
       const temp = base.clone();
       while (this.isPointInBounds(temp)) {
-         switch (dir) {
-            case Direction.Left:
-               temp.x--;
-               break;
-            case Direction.Right:
-               temp.x++;
-               break;
-            case Direction.Top:
-               temp.y--;
-               break;
-            case Direction.Bottom:
-               temp.y++;
-               break;
-         }
+         temp.shift(dir);
          if (!this.match(base, temp)) break;
          matches.push(temp.clone());
       }
@@ -124,7 +109,13 @@ export default class GameMap {
    match(a: Point, b: Point): boolean {
       if (!this.isPointInBounds(a)) return false;
       if (!this.isPointInBounds(b)) return false;
-      if (this.items[a.x][a.y].value === Gem.Clear) return false;
-      return this.items[a.x][a.y].value === this.items[b.x][b.y].value;
+      const itemA = this.getItem(a);
+      const itemB = this.getItem(b);
+      if (itemA.value === Gem.Clear) return false;
+      return itemA.value === itemB.value;
+   }
+
+   getItem(point: Point): MapItem {
+      return this.items[point.x][point.y];
    }
 }
