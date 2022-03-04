@@ -1,11 +1,11 @@
-import Drawer from './drawer';
+import DrawingService from './drawing/drawing.service';
 import GameMap from './logic/game-map';
 import Point from './logic/point';
 import { CanvasSize, CellMargin, CellOuterSize, MatrixSize } from './constants';
 import { Direction } from './enums/direction';
 
 export default class GameCore {
-   private readonly drawingService: Drawer;
+   private readonly drawingService: DrawingService;
    private readonly boundaries: DOMRect;
 
    lock = false;
@@ -14,32 +14,28 @@ export default class GameCore {
 
    constructor() {
       this.matrix = new GameMap(MatrixSize);
-      this.drawingService = new Drawer();
+      this.drawingService = new DrawingService();
       this.matrix.fill();
       this.drawingService.drawAll(this.matrix.getAll());
 
-      const map = document.getElementById('map') as HTMLElement;
-      this.boundaries = map.getBoundingClientRect();
-      map.addEventListener('mousedown', (e: any) => this.pick(new Point(e.offsetX, e.offsetY)));
-      map.addEventListener('touchstart', (e: any) => {
-         const first = e.touches[0];
-         const x = first.pageX - first.target.offsetLeft;
-         const y = first.pageY - first.target.offsetTop;
-         this.pick(new Point(x, y));
-      });
-
+      const gemsCanvas = document.getElementById('gems') as HTMLElement;
+      this.boundaries = gemsCanvas.getBoundingClientRect();
+      gemsCanvas.addEventListener('mousedown', (e: any) => this.pick(new Point(e.offsetX, e.offsetY)));
+      gemsCanvas.addEventListener('touchstart', (e: any) => this.pick(this.getPointFromToches(e)));
+      gemsCanvas.addEventListener('mousemove', (e: any) => this.move(new Point(e.offsetX, e.offsetY)));
+      gemsCanvas.addEventListener('touchmove', (e: any) => this.move(this.getPointFromToches(e)));
       document.addEventListener('mouseup', () => this.cancel());
       document.addEventListener('touchend', () => this.cancel());
-      map.addEventListener('mousemove', (e: any) => {
-         const point = new Point(e.offsetX, e.offsetY);
-         this.move(point);
-      });
-      map.addEventListener('touchmove', (e: any) => {
-         const first = e.touches[0];
-         const x = first.pageX - first.target.offsetLeft;
-         const y = first.pageY - first.target.offsetTop;
-         this.move(new Point(x, y));
-      });
+   }
+
+   getPointFromToches(event: any): Point {
+      const firstTouch = event.touches[0];
+      const parent = firstTouch.target;
+      const left = (window.innerWidth - parent.offsetWidth) / 2;
+      const top = (window.innerHeight - parent.offsetHeight) / 2;
+      const x = firstTouch.pageX - left;
+      const y = firstTouch.pageY - top;
+      return new Point(x, y);
    }
 
    pick(point: Point) {
@@ -74,11 +70,12 @@ export default class GameCore {
    async delete(matches: Point[]) {
       while (matches.length > 0) {
          const mapItems = matches.map((x) => this.matrix.getItem(x));
+         this.matrix.toggleBg(mapItems);
          await this.drawingService.delete(mapItems);
-         this.matrix.delete(matches);
+         this.matrix.clear(mapItems);
          const complemented = this.matrix.complement();
-         await this.drawingService.fall(complemented);
          matches = this.matrix.getMatches(complemented);
+         await this.drawingService.fall(complemented);
       }
    }
 

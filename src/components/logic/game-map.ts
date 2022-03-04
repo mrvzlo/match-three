@@ -28,8 +28,12 @@ export default class GameMap {
       return Array.prototype.concat.apply([], comboes);
    }
 
-   delete(list: Point[]): void {
-      list.forEach((point) => (this.getItem(point).value = Gem.Clear));
+   toggleBg(list: Point[]): void {
+      list.forEach((point) => this.getItem(point).toggleBgValue());
+   }
+
+   clear(list: Point[]): void {
+      list.forEach((point) => this.getItem(point).clear());
    }
 
    complement(): MapItem[] {

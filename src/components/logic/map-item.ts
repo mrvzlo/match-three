@@ -4,6 +4,7 @@ import Point from './point';
 export default class MapItem extends Point {
    value: Gem = Gem.Clear;
    fallFrom = 0;
+   bgValue = true;
 
    setRandomValue(): void {
       const gems = this.allGems();
@@ -21,6 +22,15 @@ export default class MapItem extends Point {
    clone(): MapItem {
       const newItem = new MapItem(this.x, this.y);
       newItem.value = this.value;
+      newItem.bgValue = this.bgValue;
       return newItem;
+   }
+
+   clear() {
+      this.value = Gem.Clear;
+   }
+
+   toggleBgValue() {
+      this.bgValue = false;
    }
 }

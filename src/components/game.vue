@@ -1,5 +1,6 @@
 <template>
-   <canvas id="map" :style="{ width: width + 'px', height: height + 'px' }"></canvas>
+   <canvas id="back" :style="{ width: width + 'px', height: height + 'px' }"></canvas>
+   <canvas id="gems" :style="{ width: width + 'px', height: height + 'px' }"></canvas>
 </template>
 
 <script lang="ts">
