@@ -4,20 +4,20 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/match-three/_config.yml"
   },
   {
-    "revision": "20ab87ad3efc9563819c",
-    "url": "/match-three/css/app.0d9c3d36.css"
+    "revision": "a866bf9be85f21f47057",
+    "url": "/match-three/css/app.41b9492e.css"
   },
   {
-    "revision": "c594328c867019e9d1bda6fa7014918d",
+    "revision": "aaf9049a4a5e985f0643cc6105b94e29",
     "url": "/match-three/index.html"
   },
   {
-    "revision": "20ab87ad3efc9563819c",
-    "url": "/match-three/js/app.7b8f0407.js"
+    "revision": "a866bf9be85f21f47057",
+    "url": "/match-three/js/app.79128e5d.js"
   },
   {
-    "revision": "54772a503d4b51bf14c2",
-    "url": "/match-three/js/chunk-vendors.bbaf8422.js"
+    "revision": "31b6da8a5c152245610f",
+    "url": "/match-three/js/chunk-vendors.8c295ae7.js"
   },
   {
     "revision": "d98fac2b354c033a91772ac90e79aeef",
