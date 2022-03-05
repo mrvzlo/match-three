@@ -1,0 +1,1 @@
+#main{height:100vh;display:flex;flex-direction:column}#main #canvases{flex-grow:1;position:relative}body{margin:0;-ms-scroll-chaining:none;overscroll-behavior:none;touch-action:none}canvas{margin:auto;position:absolute;left:50%;transform:translateX(-50%)}.title{text-align:center;margin-top:2rem;width:100%;font-size:32px;display:flex;justify-content:space-around}

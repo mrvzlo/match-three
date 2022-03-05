@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/match-three/precache-manifest.cd89f6c0d4535adb2defed80230e4edf.js"
+  "/match-three/precache-manifest.cdd064e7dfcd5b053d18f97b41e11243.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "match-three"});
