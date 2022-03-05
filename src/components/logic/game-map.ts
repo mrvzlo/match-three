@@ -23,9 +23,8 @@ export default class GameMap {
       itemB.value = temp;
    }
 
-   getMatches(source: Point[]): Point[] {
-      const comboes = source.map((x) => this.getMatchesByPoint(x));
-      return Array.prototype.concat.apply([], comboes);
+   getMatches(source: Point[]): Point[][] {
+      return source.map((x) => this.getMatchesByPoint(x));
    }
 
    toggleBg(list: Point[]): void {

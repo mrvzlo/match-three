@@ -1,21 +1,18 @@
 import { CanvasSize, CellInnerSize, CellMargin, CellOuterSize, CellPadding, FPS, FrameTime, MatrixSize } from '../constants';
 import { Direction } from '../enums/direction';
 import { Gem } from '../enums/gem';
-import GemDrawingService from './gem-drawing.service';
 import MapItem from '../logic/map-item';
 import Point from '../logic/point';
 
 export default class DrawingService {
    private readonly gemsContext: CanvasRenderingContext2D;
    private readonly bgContext: CanvasRenderingContext2D;
-   private readonly gemDrawer: GemDrawingService;
 
    constructor() {
       const gemsCanvas = document.getElementById('gems') as HTMLCanvasElement;
       this.gemsContext = gemsCanvas.getContext('2d') as CanvasRenderingContext2D;
       const bgCanvas = document.getElementById('back') as HTMLCanvasElement;
       this.bgContext = bgCanvas.getContext('2d') as CanvasRenderingContext2D;
-      this.gemDrawer = new GemDrawingService();
 
       gemsCanvas.width = CanvasSize;
       gemsCanvas.height = CanvasSize;
@@ -28,6 +25,7 @@ export default class DrawingService {
    drawAll(list: MapItem[]) {
       list.forEach((item) => {
          this.drawBorders(item);
+         this.fillBg(item);
          this.clearCell(item);
          this.drawMapItem(item);
       });
@@ -82,18 +80,10 @@ export default class DrawingService {
 
    drawMapItem(mapItem: MapItem) {
       const absolutePoint = this.getAbsolutePosition(mapItem, CellPadding);
-      switch (mapItem.value) {
-         case Gem.Red:
-            return this.gemDrawer.drawRed(absolutePoint, this.gemsContext);
-         case Gem.Green:
-            return this.gemDrawer.drawGreen(absolutePoint, this.gemsContext);
-         case Gem.Blue:
-            return this.gemDrawer.drawBlue(absolutePoint, this.gemsContext);
-         case Gem.Purple:
-            return this.gemDrawer.drawPurple(absolutePoint, this.gemsContext);
-         case Gem.Yellow:
-            return this.gemDrawer.drawYellow(absolutePoint, this.gemsContext);
-      }
+      const img = new Image();
+      img.onload = () => this.gemsContext.drawImage(img, absolutePoint.x, absolutePoint.y, CellInnerSize, CellInnerSize);
+      const name = Gem[mapItem.value].toLowerCase();
+      img.src = require(`@/assets/gems/${name}.png`);
    }
 
    clearCell(point: Point) {
@@ -110,7 +100,7 @@ export default class DrawingService {
    }
 
    private fillBg(point: MapItem) {
-      this.bgContext.fillStyle = !point.bgValue ? '#eec' : '#fff';
+      this.bgContext.fillStyle = point.bgValue ? '#eec' : '#fff';
       this.fillCell(point);
    }
 

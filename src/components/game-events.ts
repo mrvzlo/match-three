@@ -3,46 +3,36 @@ import GameMap from './logic/game-map';
 import Point from './logic/point';
 import { CanvasSize, CellMargin, CellOuterSize, MatrixSize } from './constants';
 import { Direction } from './enums/direction';
+import Score from './logic/score';
 
-export default class GameCore {
+export default class GameEvents {
    private readonly drawingService: DrawingService;
-   private readonly boundaries: DOMRect;
 
    lock = false;
    matrix: GameMap;
    focused: Point | null = null;
+   started = false;
+   stoped = false;
 
-   constructor() {
+   constructor(private readonly boundaries: number, private readonly score: Score) {
       this.matrix = new GameMap(MatrixSize);
       this.drawingService = new DrawingService();
       this.matrix.fill();
       this.drawingService.drawAll(this.matrix.getAll());
 
       const gemsCanvas = document.getElementById('gems') as HTMLElement;
-      this.boundaries = gemsCanvas.getBoundingClientRect();
-      gemsCanvas.addEventListener('mousedown', (e: any) => this.pick(new Point(e.offsetX, e.offsetY)));
-      gemsCanvas.addEventListener('touchstart', (e: any) => this.pick(this.getPointFromToches(e)));
-      gemsCanvas.addEventListener('mousemove', (e: any) => this.move(new Point(e.offsetX, e.offsetY)));
-      gemsCanvas.addEventListener('touchmove', (e: any) => this.move(this.getPointFromToches(e)));
-      document.addEventListener('mouseup', () => this.cancel());
-      document.addEventListener('touchend', () => this.cancel());
+      gemsCanvas.addEventListener('pointerdown', (e: any) => this.pick(this.getPointFromClick(e)));
+      gemsCanvas.addEventListener('pointermove', (e: any) => this.move(this.getPointFromClick(e)));
+      document.addEventListener('pointerup', () => this.cancel());
    }
 
-   getPointFromToches(event: any): Point {
-      const firstTouch = event.touches[0];
-      const parent = firstTouch.target;
-      const left = (window.innerWidth - parent.offsetWidth) / 2;
-      const top = (window.innerHeight - parent.offsetHeight) / 2;
-      const x = firstTouch.pageX - left;
-      const y = firstTouch.pageY - top;
-      return new Point(x, y);
+   getPointFromClick(event: any): Point {
+      return new Point(event.offsetX, event.offsetY);
    }
 
    pick(point: Point) {
-      if (this.lock) return;
+      if (this.lock || this.stoped) return;
       this.focused = this.getCoordinates(point);
-      if (this.focused === null) return;
-      this.drawingService.drawMapItem(this.matrix.getItem(this.focused));
    }
 
    async move(point: Point) {
@@ -53,23 +43,41 @@ export default class GameCore {
       const second = this.getSecondPoint(first, temp);
       if (second === null) return;
       this.focused = null;
+      if (!this.started) {
+         this.score.timerStart();
+         this.started = true;
+      }
 
       this.lock = true;
       await this.drawingService.swap(this.matrix.getItem(first), this.matrix.getItem(second));
       this.matrix.swap(this.matrix.getItem(first), this.matrix.getItem(second));
       const matches = this.matrix.getMatches([first, second]);
-      if (matches.length === 0) {
+      const hasMatch = matches.some((x) => x.length > 0);
+      if (hasMatch) {
+         await this.delete(matches);
+      } else {
          await this.drawingService.swap(this.matrix.getItem(first), this.matrix.getItem(second));
          this.matrix.swap(first, second);
-      } else {
-         await this.delete(matches);
       }
+      this.check();
       this.lock = false;
    }
 
-   async delete(matches: Point[]) {
+   check() {
+      const remaining = this.matrix.getAll().filter((x) => x.bgValue);
+      if (remaining.length > 0) return;
+      this.score.timerEnd();
+      this.score.complete();
+      this.stoped = true;
+   }
+
+   async delete(matches: Point[][]) {
       while (matches.length > 0) {
-         const mapItems = matches.map((x) => this.matrix.getItem(x));
+         matches = matches.filter((x) => x.length > 0);
+         matches.forEach((x) => this.score.scoreMatches(x));
+         const total = ([] as Point[]).concat.apply([], matches);
+         const mapItems = total.map((x) => this.matrix.getItem(x));
+         this.score.completeCells(mapItems.filter((x) => x.bgValue).length);
          this.matrix.toggleBg(mapItems);
          await this.drawingService.delete(mapItems);
          this.matrix.clear(mapItems);
@@ -97,12 +105,11 @@ export default class GameCore {
    }
 
    getCoordinates(offset: Point): Point | null {
-      const posX = ((offset.x - CellMargin) * CanvasSize) / this.boundaries.width;
-      const posY = ((offset.y - CellMargin) * CanvasSize) / this.boundaries.height;
+      const posX = (offset.x * CanvasSize) / this.boundaries - CellMargin;
+      const posY = (offset.y * CanvasSize) / this.boundaries - CellMargin;
       const cellX = posX / CellOuterSize;
       const cellY = posY / CellOuterSize;
       if (cellX < 0 || cellY < 0 || cellX >= MatrixSize || cellY >= MatrixSize) return null;
-
       return new Point(Math.floor(cellX), Math.floor(cellY));
    }
 }

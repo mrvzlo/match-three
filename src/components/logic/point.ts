@@ -15,12 +15,6 @@ export default class Point {
    constructor(x: number, y: number) {
       this._x = x;
       this._y = y;
-      this.round();
-   }
-
-   round() {
-      this._x = Math.round(this.x);
-      this._y = Math.round(this.y);
    }
 
    clone() {
