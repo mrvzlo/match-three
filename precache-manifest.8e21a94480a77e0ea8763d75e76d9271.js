@@ -4,16 +4,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/match-three/_config.yml"
   },
   {
-    "revision": "1703548903b469e9126e",
-    "url": "/match-three/css/app.64ac0884.css"
+    "revision": "8908912a2fa2231c4e11",
+    "url": "/match-three/css/app.0b03c250.css"
   },
   {
-    "revision": "62c6b9692b2ef5e71522a1c245d3ccef",
+    "revision": "1225827ab91c89cf8b3abfb1e830609a",
     "url": "/match-three/index.html"
   },
   {
-    "revision": "1703548903b469e9126e",
-    "url": "/match-three/js/app.c382e5e2.js"
+    "revision": "8908912a2fa2231c4e11",
+    "url": "/match-three/js/app.99da7051.js"
   },
   {
     "revision": "02c4842966fc9480d92c",
